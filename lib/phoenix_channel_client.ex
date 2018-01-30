@@ -67,7 +67,7 @@ defmodule PhoenixChannelClient do
   @type connect_error :: {:error, term}
 
   @default_timeout 5000
-  @max_timeout 60000 # 1 minute
+  @max_timeout 60000 * 30 # 30 minute
 
   @phoenix_vsn "1.0.0"
 
