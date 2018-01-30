@@ -104,7 +104,7 @@ defmodule PhoenixChannelClient do
   """
   @spec connect(term, keyword) :: {:ok, socket} | connect_error
   def connect(name, opts) do
-    case GenServer.call(name, {:connect, opts}) do
+    case GenServer.call(name, {:connect, opts}, :infinity) do
       :ok -> {:ok, %Socket{server_name: name}}
       {:error, reason} -> {:error, reason}
     end
@@ -115,7 +115,7 @@ defmodule PhoenixChannelClient do
   """
   @spec reconnect(socket) :: :ok | connect_error
   def reconnect(socket) do
-    GenServer.call(socket.server_name, :reconnect)
+    GenServer.call(socket.server_name, :reconnect, :infinity)
   end
 
   @doc """
@@ -188,7 +188,7 @@ defmodule PhoenixChannelClient do
   """
   @spec push(channel, String.t, map) :: send_result
   def push(channel, event, payload) do
-    ref = GenServer.call(channel.socket.server_name, :make_ref)
+    ref = GenServer.call(channel.socket.server_name, :make_ref, :infinity)
     do_push(channel, event, payload, ref)
   end
 
@@ -206,7 +206,7 @@ defmodule PhoenixChannelClient do
   """
   @spec push_and_receive(channel, String.t, map, number) :: result
   def push_and_receive(channel, event, payload, timeout \\ @default_timeout) do
-    ref = GenServer.call(channel.socket.server_name, :make_ref)
+    ref = GenServer.call(channel.socket.server_name, :make_ref, :infinity)
     subscription = reply_subscription_key(ref)
     task = Task.async(fn ->
       matcher = fn %{topic: topic, event: event, ref: msg_ref} ->
@@ -245,7 +245,7 @@ defmodule PhoenixChannelClient do
       ref: ref
     }
     json = Poison.encode!(obj)
-    socket = GenServer.call(channel.socket.server_name, :socket)
+    socket = GenServer.call(channel.socket.server_name, :socket, :infinity)
     WebSocket.send(socket, {:text, json})
   end
 
